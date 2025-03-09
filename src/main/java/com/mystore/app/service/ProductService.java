@@ -3,7 +3,11 @@ package com.mystore.app.service;
 import com.mystore.app.entity.Product;
 import com.mystore.app.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +26,17 @@ public class ProductService {
         return product;
     }
 
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Page<Product> getAllProducts(Integer page, Integer pageSize, String sortBy, String sortDir) {
+        Sort.Direction direction= Sort.DEFAULT_DIRECTION;
+        if(sortDir.equalsIgnoreCase("asc")){
+            direction=Sort.Direction.ASC;
+        } else if (sortDir.equalsIgnoreCase("desc")) {
+            direction=Sort.Direction.DESC;
+        }
+        Sort sort=Sort.by(direction,sortBy);
+        PageRequest pageRequest=PageRequest.of(page,pageSize,sort);
+
+        return productRepository.findAll(pageRequest);
     }
 
     public Product getProduct(Integer id) {
@@ -50,15 +63,24 @@ public class ProductService {
     }
 
     // TODO: Method to search products by name
-
-
+    public List<Product> getProductsByName(String name){
+        return productRepository.findByNameContainsIgnoreCase(name);
+    }
     // TODO: Method to filter products by category
+    public List<Product> filterByCategory(String category){
+        return productRepository.findByCategoryContains(category);
+    }
 
 
     // TODO: Method to filter products by price range
-
+    public List<Product> filterProductByPrice(Integer min,Integer max){
+        return productRepository.findByPriceBetween(min,max);
+    }
 
     // TODO: Method to filter products by stock quantity range
+    public List<Product> filterProductByStock(Integer min,Integer max){
+        return productRepository.findByStockQuantityBetween(min,max);
+    }
 
 
 }
